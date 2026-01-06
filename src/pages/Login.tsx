@@ -1,9 +1,27 @@
 import { useState } from "react";
-import { setPersistence, signInWithEmailAndPassword, browserLocalPersistence } from "firebase/auth";
+import {
+  setPersistence,
+  signInWithEmailAndPassword,
+  browserLocalPersistence,
+  User,
+} from "firebase/auth";
 import { auth } from "../firebase";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import { CgSpinner } from "react-icons/cg";
 
-export default function Login() {
+export default function Login({ user }: { user: User | null | undefined }) {
+  if (user === undefined) {
+    return (
+      <div className="w-screen h-screen flex flex-col justify-center items-center">
+        <CgSpinner size={64} className="animate-spin" />
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,8 +46,16 @@ export default function Login() {
   return (
     <div className="w-screen h-screen flex flex-col justify-center items-center">
       <h1 className="text-4xl font-semibold mb-4">Sign in to continue</h1>
-      <form onSubmit={handleLogin} className="flex flex-col justify-center items-center gap-2">
-        <input type="text" placeholder="Email" className="w-96 border border-amber-500 p-2 rounded-xl" onChange={(e) => setEmail(e.target.value)} />
+      <form
+        onSubmit={handleLogin}
+        className="flex flex-col justify-center items-center gap-2"
+      >
+        <input
+          type="text"
+          placeholder="Email"
+          className="w-96 border border-amber-500 p-2 rounded-xl"
+          onChange={(e) => setEmail(e.target.value)}
+        />
         <input
           type="password"
           placeholder="Password"
@@ -39,7 +65,8 @@ export default function Login() {
         <button
           type="submit"
           disabled={loading}
-          className="w-48 rounded-xl bg-amber-500 hover:bg-amber-400 active:bg-amber-300 p-2 text-white font-bold cursor-pointer">
+          className="w-48 rounded-xl bg-amber-500 hover:bg-amber-400 active:bg-amber-300 p-2 text-white font-bold cursor-pointer"
+        >
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>

@@ -1,13 +1,25 @@
-import { Outlet } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
+import { Navigate, Outlet } from "react-router-dom";
+import { User } from "firebase/auth";
+import { CgSpinner } from "react-icons/cg";
+import CustomerDashboard from "./CustomerDashboard";
 
-export default function DashboardLayout() {
-  return (
+export default function DashboardLayout({
+  user,
+  admin,
+}: {
+  user: User | null | undefined;
+  admin: boolean | null;
+}) {
+  return user === null ? (
+    <Navigate to="/" replace />
+  ) : user === undefined || admin === null ? (
+    <div className="w-screen h-screen flex flex-col justify-center items-center">
+      <h1 className="text-xl font-bold mb-4">Just a moment...</h1>
+      <CgSpinner size={64} className="animate-spin" />
+    </div>
+  ) : (
     <div className="flex h-full">
-      <Sidebar />
-      <div className="flex-1 p-4">
-        <Outlet />
-      </div>
+      {admin ? <Outlet /> : <CustomerDashboard user={user} />}
     </div>
   );
 }

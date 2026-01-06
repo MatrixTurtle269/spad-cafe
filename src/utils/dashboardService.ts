@@ -1,11 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
 import { db } from "../firebase";
-import { collection, getDocs, query, orderBy, Timestamp, where } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  Timestamp,
+  where,
+  onSnapshot,
+} from "firebase/firestore";
 import { getDaySpan } from "./getDaySpan";
 
 export type MenuItemProps = {
   name: string;
   price: number;
+  outOfStock?: boolean;
+  index?: number;
+  category?: string;
+  id: string;
+};
+export type MenuCategoryProps = {
+  name: string;
+  index: number;
   id: string;
 };
 export type ListItemProps = {
@@ -26,6 +42,7 @@ export type ListItemProps = {
     quantity: number;
   }[];
   done: boolean;
+  online?: boolean;
   id: string;
 };
 export type CustomerData = {
@@ -34,25 +51,102 @@ export type CustomerData = {
   funds: number;
   id: string;
 };
+export type CheckoutJobData = {
+  name: string;
+  processed: boolean;
+  timestamp: Timestamp;
+  start?: Date;
+  end?: Date;
+  lastCompInfo?: { timestamp: Date; start: Date; end: Date };
+  id: string;
+};
+export type CheckoutJobCompiledListItemProps = {
+  customer: CustomerData;
+  receipt: { name: string; quantity: number }[];
+  payment: number;
+  modifier?: number;
+  emailSent: boolean;
+  paid: boolean;
+  id: string;
+};
 
-export type LocalListDataUpdater = (id: string, updatedProps: Partial<ListItemProps>) => void;
+export type LocalListDataUpdater = (
+  id: string,
+  updatedProps: Partial<ListItemProps>
+) => void;
 export type LocalListDataAdder = (props: ListItemProps) => void;
 export type LocalListDataDeleter = (id: string) => void;
 
+export type LocalCompiledListDataAdder = (
+  props: CheckoutJobCompiledListItemProps
+) => void;
+export type LocalCompiledListDataUpdater = (
+  id: string,
+  updatedProps: Partial<CheckoutJobCompiledListItemProps>
+) => void;
+export type LocalCompiledListDataDeleter = (id: string) => void;
+
 export const fetchList = async (date: Date) => {
   const { start, end } = getDaySpan(date);
-  const listSnap = await getDocs(
-    query(collection(db, "log"), where("timestamp", ">=", start), where("timestamp", "<=", end), orderBy("timestamp", "desc"))
+  const snap = await getDocs(
+    query(
+      collection(db, "log"),
+      where("timestamp", ">=", start),
+      where("timestamp", "<=", end),
+      orderBy("timestamp", "desc")
+    )
   );
-  return listSnap.docs.map((doc) => ({ ...doc.data(), id: doc.id } as ListItemProps));
+  return snap.docs.map(
+    (doc) => ({ ...doc.data(), id: doc.id } as ListItemProps)
+  );
+};
+
+export const subscribeToList = (
+  date: Date,
+  callback: (items: ListItemProps[]) => void
+) => {
+  const { start, end } = getDaySpan(date);
+
+  const q = query(
+    collection(db, "log"),
+    where("timestamp", ">=", start),
+    where("timestamp", "<=", end),
+    orderBy("timestamp", "desc")
+  );
+
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const items = snapshot.docs.map(
+      (doc) => ({ ...doc.data(), id: doc.id } as ListItemProps)
+    );
+    callback(items);
+  });
+
+  return unsubscribe;
 };
 
 export const useMenu = () => {
   return useQuery({
     queryKey: ["menu"],
     queryFn: async () => {
-      const menuSnap = await getDocs(collection(db, "menu"));
-      return menuSnap.docs.map((doc) => ({ ...doc.data(), id: doc.id } as MenuItemProps));
+      const snap = await getDocs(collection(db, "menu"));
+      return snap.docs.map(
+        (doc) => ({ ...doc.data(), id: doc.id } as MenuItemProps)
+      );
+    },
+    staleTime: 1000 * 60 * 10, // Stale after 10 mins
+  });
+};
+
+export const useMenuCategories = () => {
+  return useQuery({
+    queryKey: ["menuCategories"],
+    queryFn: async () => {
+      const snap = await getDocs(
+        query(collection(db, "menuCategories"), orderBy("index", "asc"))
+      );
+      return snap.docs.map(
+        (doc) => ({ ...doc.data(), id: doc.id } as MenuCategoryProps)
+      );
     },
     staleTime: 1000 * 60 * 10, // Stale after 10 mins
   });
@@ -62,9 +156,28 @@ export const useCustomerList = () => {
   return useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
-      const querySnap = await getDocs(query(collection(db, "users"), orderBy("name", "desc")));
-      return querySnap.docs.map((doc) => ({ ...doc.data(), id: doc.id } as CustomerData));
+      const snap = await getDocs(
+        query(collection(db, "users"), orderBy("name", "desc"))
+      );
+      return snap.docs.map(
+        (doc) => ({ ...doc.data(), id: doc.id } as CustomerData)
+      );
     },
-    staleTime: Infinity,
+    staleTime: 1000 * 60 * 10, // Stale after 10 mins
+  });
+};
+
+export const useCheckoutJobList = () => {
+  return useQuery({
+    queryKey: ["checkoutJobs"],
+    queryFn: async () => {
+      const snap = await getDocs(
+        query(collection(db, "checkout"), orderBy("timestamp", "desc"))
+      );
+      return snap.docs.map(
+        (doc) => ({ ...doc.data(), id: doc.id } as CheckoutJobData)
+      );
+    },
+    staleTime: 1000 * 60 * 10, // Stale after 10 mins
   });
 };

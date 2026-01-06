@@ -4,6 +4,7 @@ import { db } from "../firebase";
 import { CustomerData } from "../utils/dashboardService";
 import Modal from "./Modal";
 import { useQueryClient } from "@tanstack/react-query";
+import { MdAdd } from "react-icons/md";
 
 export default function AddCustomerButton() {
   const [open, setOpen] = useState(false);
@@ -24,7 +25,10 @@ export default function AddCustomerButton() {
       };
 
       const docRef = await addDoc(collection(db, "users"), data);
-      queryClient.setQueryData<CustomerData[]>(["customers"], (prevList) => [{ ...data, id: docRef.id }, ...prevList!]);
+      queryClient.setQueryData<CustomerData[]>(["customers"], (prevList) => [
+        { ...data, id: docRef.id },
+        ...prevList!,
+      ]);
 
       setOpen(false);
       setName("");
@@ -38,8 +42,12 @@ export default function AddCustomerButton() {
 
   return (
     <>
-      <button className="px-3 py-1 bg-amber-500 text-white font-semibold rounded-full cursor-pointer" onClick={() => setOpen(true)}>
+      <button
+        className="flex items-center gap-1 px-3 py-1 bg-amber-500 hover:bg-amber-400 text-white font-semibold rounded-full cursor-pointer"
+        onClick={() => setOpen(true)}
+      >
         Add New
+        <MdAdd size={20} />
       </button>
       <Modal open={open} setOpen={setOpen}>
         <div className="flex flex-col gap-2">
@@ -64,7 +72,8 @@ export default function AddCustomerButton() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-48 rounded-xl bg-amber-500 hover:bg-amber-400 active:bg-amber-300 disabled:bg-gray-400 p-2 text-white font-bold cursor-pointer self-center">
+              className="w-48 rounded-xl bg-amber-500 hover:bg-amber-400 active:bg-amber-300 disabled:bg-gray-400 p-2 text-white font-bold cursor-pointer self-center"
+            >
               {submitting ? "Submitting..." : "Submit"}
             </button>
           </form>

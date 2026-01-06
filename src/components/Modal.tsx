@@ -3,17 +3,26 @@ import React from "react";
 interface Props {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  locked?: boolean;
   children: React.ReactNode;
 }
 
-export default function Modal({ open, setOpen, children }: Props) {
+export default function Modal({ open, setOpen, locked, children }: Props) {
   return (
     <div
       className={`w-screen h-screen fixed top-0 left-0 bg-black/50 flex justify-center items-center z-10 ${
         open ? "visible opacity-100" : "invisible opacity-0"
       }`}
-      onClick={() => setOpen(false)}>
-      <div onClick={(e) => e.stopPropagation()} className="bg-white p-4 rounded-xl">
+      onClick={() => {
+        if (!locked) {
+          setOpen(false);
+        }
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white p-4 rounded-xl overflow-scroll max-h-[90vh]"
+      >
         {children}
       </div>
     </div>

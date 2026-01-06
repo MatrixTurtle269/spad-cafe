@@ -18,20 +18,34 @@ export default function DateSelector({ date, isToday, setDate }: Props) {
     <>
       <div className="w-full py-2 bg-gray-100 rounded-xl flex flex-col items-center gap-2">
         <div className="w-full flex flex-row justify-center items-center gap-4">
-          <button onClick={() => setDate((prevDate) => dayjs(prevDate).subtract(1, "day").toDate())} className="cursor-pointer">
+          <button
+            onClick={() =>
+              setDate((prevDate) => dayjs(prevDate).subtract(1, "day").toDate())
+            }
+            className="cursor-pointer"
+          >
             <MdChevronLeft size={30} />
           </button>
           <button
             onClick={() => setOpen(true)}
-            className="cursor-pointer px-4 py-2 bg-amber-100 hover:bg-amber-200 rounded-xl shadow text-lg font-semibold">
+            className="w-64 cursor-pointer py-2 bg-amber-100 hover:bg-amber-200 rounded-xl shadow text-lg font-semibold"
+          >
             {dayjs(date).format("dddd, M/D/YYYY")}
           </button>
-          <button onClick={() => setDate((prevDate) => dayjs(prevDate).add(1, "day").toDate())} className="cursor-pointer">
+          <button
+            onClick={() =>
+              setDate((prevDate) => dayjs(prevDate).add(1, "day").toDate())
+            }
+            className="cursor-pointer"
+          >
             <MdChevronRight size={30} />
           </button>
         </div>
         {!isToday && (
-          <button className="cursor-pointer underline text-amber-600" onClick={() => setDate(new Date())}>
+          <button
+            className="cursor-pointer underline text-amber-600"
+            onClick={() => setDate(new Date())}
+          >
             Back to Today
           </button>
         )}

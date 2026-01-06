@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { fetchList, ListItemProps, LocalListDataAdder, LocalListDataDeleter, LocalListDataUpdater } from "../utils/dashboardService";
+import { subscribeToList, ListItemProps } from "../utils/dashboardService";
 import dayjs from "dayjs";
 import ListItem from "../components/ListItem";
-import TotalPanel from "../components/TotalPanel";
 import AddEntryPanel from "../components/AddEntryPanel";
 import DateSelector from "../components/DateSelector";
+import { MdList } from "react-icons/md";
+import colors from "tailwindcss/colors";
 
 export default function Dashboard() {
   const [list, setList] = useState<ListItemProps[]>([]);
@@ -17,32 +18,32 @@ export default function Dashboard() {
   const [doneCount, setDoneCount] = useState(0);
   const [revenue, setRevenue] = useState(0);
 
-  const updateLocalListData: LocalListDataUpdater = (id, updatedProps) => {
-    setList((prevList) => prevList.map((item) => (item.id === id ? { ...item, ...updatedProps } : item)));
-    console.log(updatedProps);
-  };
-  const addLocalListData: LocalListDataAdder = (props) => {
-    setList((prevList) => [props, ...prevList]);
-  };
-  const deleteLocalListData: LocalListDataDeleter = (id) => {
-    setList((prevList) => prevList.filter((item) => item.id !== id));
-  };
-
-  const handleRefresh = async () => {
-    setLoading(true);
-    try {
-      const listData = await fetchList(date);
-      setList(listData);
-    } catch (e: any) {
-      alert(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const updateLocalListData: LocalListDataUpdater = (id, updatedProps) => {
+  //   setList((prevList) =>
+  //     prevList.map((item) =>
+  //       item.id === id ? { ...item, ...updatedProps } : item
+  //     )
+  //   );
+  //   console.log(updatedProps);
+  // };
+  // const addLocalListData: LocalListDataAdder = (props) => {
+  //   setList((prevList) => [props, ...prevList]);
+  // };
+  // const deleteLocalListData: LocalListDataDeleter = (id) => {
+  //   setList((prevList) => prevList.filter((item) => item.id !== id));
+  // };
 
   useEffect(() => {
     setIsToday(dayjs(date).isSame(dayjs(), "day"));
-    handleRefresh();
+    setLoading(true);
+    const unsubscribe = subscribeToList(date, (items) => {
+      setList(items);
+      setLoading(false);
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, [date]);
 
   useEffect(() => {
@@ -51,35 +52,33 @@ export default function Dashboard() {
   }, [list]);
 
   return (
-    <div className="w-full flex flex-col gap-4">
-      <DateSelector date={date} isToday={isToday} setDate={setDate} />
-      <div className="w-full flex flex-1 gap-4">
-        <div className="flex-2 flex-col">
-          <div className="w-full border-b border-b-gray-300 flex justify-between">
-            <p>
-              <b className="text-red-500">{list.length - doneCount}</b> waiting / <b className="text-green-600">{doneCount}</b> completed
-            </p>
-            <p>
-              <b>{list.length}</b> total orders
-            </p>
+    <div className="flex w-screen h-screen gap-4 pt-16">
+      <div className="flex-2 flex-col overflow-scroll p-4">
+        <div className="w-full bg-gray-100 px-4 p-2 flex justify-between rounded-xl shadow">
+          <p>
+            <b className="text-red-500">{list.length - doneCount}</b> waiting /{" "}
+            <b className="text-green-600">{doneCount}</b> completed /{" "}
+            <b>{list.length}</b> total orders
+          </p>
+          <p>
+            Total Revenue: <b>{revenue.toLocaleString()} ₩</b>
+          </p>
+        </div>
+        {loading ? (
+          <p>Loading...</p>
+        ) : list.length > 0 ? (
+          list.map((props, i) => <ListItem {...props} key={i} />)
+        ) : (
+          <div className="w-full flex flex-col justify-center items-center mt-48">
+            <MdList size={128} color={colors.gray["300"]} />
+            <p className="text-gray-300">No Entries</p>
           </div>
+        )}
+      </div>
 
-          <div className="w-full">
-            {loading ? (
-              <p>Loading...</p>
-            ) : list.length > 0 ? (
-              list.map((props, i) => <ListItem {...props} updateLocal={updateLocalListData} deleteLocal={deleteLocalListData} key={i} />)
-            ) : (
-              <div className="w-full h-full flex justify-center items-center">
-                <p>No Entries</p>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="flex-1 flex-col">
-          <AddEntryPanel addLocal={addLocalListData} />
-          <TotalPanel loading={loading} revenue={revenue} />
-        </div>
+      <div className="flex flex-1 flex-col gap-4 pr-4 py-4">
+        <DateSelector date={date} isToday={isToday} setDate={setDate} />
+        <AddEntryPanel />
       </div>
     </div>
   );

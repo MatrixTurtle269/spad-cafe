@@ -16,14 +16,20 @@ export default function Customers() {
   });
 
   useEffect(() => {
-    setSearchResult(searchQuery === "" ? customerList || [] : fuse.search(searchQuery).map((result) => result.item));
+    setSearchResult(
+      searchQuery === ""
+        ? customerList || []
+        : fuse.search(searchQuery).map((result) => result.item)
+    );
   }, [searchQuery, customerList]);
 
   return (
-    <div className="w-full flex flex-col gap-4">
+    <div className="w-full flex flex-col gap-4 pt-20 p-4">
       <div className="w-full flex justify-between items-center pb-2 border-b border-b-gray-300">
         <div className="flex gap-4">
-          <h1 className="text-2xl font-semibold">{customerList?.length} Registered Customers</h1>
+          <h1 className="text-2xl font-semibold">
+            {customerList?.length} Registered Customers
+          </h1>
           <AddCustomerButton />
         </div>
         <RefreshButton queryKey="customers" />

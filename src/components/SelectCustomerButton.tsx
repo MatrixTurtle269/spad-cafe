@@ -23,22 +23,41 @@ export default function SelectCustomerButton({ customer, setCustomer }: Props) {
   });
 
   useEffect(() => {
-    setSearchResult(searchQuery === "" ? customerList || [] : fuse.search(searchQuery).map((result) => result.item));
+    setSearchResult(
+      searchQuery === ""
+        ? customerList || []
+        : fuse.search(searchQuery).map((result) => result.item)
+    );
   }, [searchQuery, customerList]);
 
   return (
     <>
       <div className="w-full flex">
         <button
-          className={`flex-1 border border-amber-500 ${customer ? "bg-amber-500 hover:bg-amber-400" : "bg-white hover:bg-amber-50"} p-2 rounded-xl`}
-          onClick={() => setOpen(true)}>
+          className={`flex-1 border border-amber-500 ${
+            customer
+              ? "bg-amber-500 hover:bg-amber-400"
+              : "bg-white hover:bg-amber-100"
+          } p-2 rounded-xl cursor-pointer`}
+          onClick={(e) => {
+            e.preventDefault();
+            setOpen(true);
+          }}
+        >
           <div className="w-full flex justify-between items-center pl-1">
-            {customer ? <p className="text-white font-semibold">{customer.name}</p> : <p className="text-gray-500">Select Customer</p>}
+            {customer ? (
+              <p className="text-white font-semibold">{customer.name}</p>
+            ) : (
+              <p className="text-gray-500">Select Customer</p>
+            )}
             <MdChevronRight color={customer ? "white" : "black"} />
           </div>
         </button>
         {customer && (
-          <button className="p-2 rounded-full cursor-pointer" onClick={() => setCustomer(null)}>
+          <button
+            className="p-2 rounded-full cursor-pointer"
+            onClick={() => setCustomer(null)}
+          >
             <MdClose size={20} color="red" />
           </button>
         )}
@@ -71,7 +90,8 @@ export default function SelectCustomerButton({ customer, setCustomer }: Props) {
                       setOpen(false);
                       setSearchQuery("");
                     }}
-                    key={i}>
+                    key={i}
+                  >
                     <p className="text-lg font-semibold">{v.name}</p>
                     <p className="text-sm text-gray-500">{v.email}</p>
                   </div>

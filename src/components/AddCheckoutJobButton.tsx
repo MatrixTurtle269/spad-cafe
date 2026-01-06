@@ -1,18 +1,20 @@
-import { addDoc, collection } from "firebase/firestore";
-import { useState } from "react";
+import { addDoc, collection, Timestamp } from "firebase/firestore";
+import { Dispatch, SetStateAction, useState } from "react";
 import { db } from "../firebase";
-import { MenuItemProps } from "../utils/dashboardService";
-import { nanSafe } from "../utils/nanSafe";
+import { CheckoutJobData } from "../utils/dashboardService";
 import Modal from "./Modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { MdAdd } from "react-icons/md";
 
-export default function AddMenuButton() {
+interface Props {
+  setSelectedJobIndex: Dispatch<SetStateAction<number | null>>;
+}
+
+export default function AddCheckoutJobButton({ setSelectedJobIndex }: Props) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const [name, setName] = useState("");
-  const [price, setPrice] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: any) => {
@@ -21,18 +23,19 @@ export default function AddMenuButton() {
     try {
       const data = {
         name: name,
-        price: nanSafe(price),
+        processed: false,
+        timestamp: Timestamp.fromDate(new Date()),
       };
 
-      const docRef = await addDoc(collection(db, "menu"), data);
-      queryClient.setQueryData<MenuItemProps[]>(["menu"], (prevMenu) => [
-        { ...data, id: docRef.id },
-        ...prevMenu!,
-      ]);
+      const docRef = await addDoc(collection(db, "checkout"), data);
+      queryClient.setQueryData<CheckoutJobData[]>(
+        ["checkoutJobs"],
+        (prevList) => [{ ...data, id: docRef.id }, ...prevList!]
+      );
 
       setOpen(false);
       setName("");
-      setPrice(0);
+      setSelectedJobIndex(0); // Select the one just created
     } catch (e: any) {
       alert(e.message);
     } finally {
@@ -51,7 +54,7 @@ export default function AddMenuButton() {
       </button>
       <Modal open={open} setOpen={setOpen}>
         <div className="flex flex-col gap-2">
-          <h1 className="text-xl font-semibold">New Menu Item</h1>
+          <h1 className="text-xl font-semibold">New Checkout Job</h1>
           <form onSubmit={handleSubmit} className="flex flex-col gap-2">
             <input
               type="text"
@@ -61,19 +64,6 @@ export default function AddMenuButton() {
               onChange={(e) => setName(e.target.value)}
               required
             />
-            <div className="w-96 flex items-center gap-2">
-              <input
-                type="number"
-                placeholder="Price"
-                className="w-full border border-amber-500 bg-white p-2 rounded-xl"
-                value={price}
-                onChange={(e) => setPrice(parseInt(e.target.value))}
-                min="0"
-                max="99999"
-                required
-              />
-              <p className="text-xl">₩</p>
-            </div>
             <button
               type="submit"
               disabled={submitting}

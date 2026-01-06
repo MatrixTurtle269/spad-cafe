@@ -1,14 +1,11 @@
 import { useState } from "react";
-import { db } from "../firebase";
-import { updateDoc, deleteDoc, doc } from "firebase/firestore";
 import dayjs from "dayjs";
 import { ListItemProps } from "../utils/dashboardService";
-import { MdDeleteForever } from "react-icons/md";
 import Modal from "./Modal";
 
 interface Props extends ListItemProps {}
 
-export default function ListItem({
+export default function CustomerListItem({
   name,
   payment,
   originalPayment,
@@ -21,55 +18,22 @@ export default function ListItem({
   timestamp,
   details,
   done,
-  online,
   id,
 }: Props) {
-  const [updating, setUpdating] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-
   const [detailsShown, setDetailsShown] = useState(false);
-
-  const handleDeleteEntry = async () => {
-    setDeleting(true);
-    try {
-      if (confirm("Are you sure you want to delete this item?")) {
-        await deleteDoc(doc(db, "log", id));
-      }
-    } catch (e: any) {
-      alert(e.message);
-    }
-  };
-
-  const onChangeHandler = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUpdating(true);
-    try {
-      await updateDoc(doc(db, "log", id), { done: e.target.checked });
-    } catch (e: any) {
-      alert(e.message);
-    } finally {
-      setUpdating(false);
-    }
-  };
 
   return (
     <>
       <div
-        className={`w-full flex flex-row items-center justify-between p-2 border-b border-b-gray-300 relative ${
-          deleting ? "opacity-30" : ""
-        } ${online ? "bg-blue-50" : "bg-white"}`}
+        className={`w-full flex flex-row items-center justify-between p-3 border border-amber-500 bg-amber-50 rounded-xl relative`}
       >
         <div className="flex flex-1 flex-col items-start">
-          <p className="font-bold">{name}</p>
-          <p className="text-sm ml-4">
-            -{" "}
+          <p className="font-semibold">
             {details
-              .map(({ menuLabel, quantity }) => `${menuLabel} x${quantity}`)
+              .map(({ menuLabel, quantity }) => `${menuLabel} (${quantity})`)
               .join(", ")}
           </p>
-          <p className="text-sm text-gray-500">
-            {online && <b className="text-blue-500">Online: </b>}
-            {notes}
-          </p>
+          <p className="text-sm text-gray-500">{notes}</p>
         </div>
         <div className="flex flex-1 justify-center">
           <button
@@ -87,29 +51,13 @@ export default function ListItem({
         <div className="flex flex-1 justify-center">
           <p>{dayjs(timestamp.toDate()).format("h:mm A")}</p>
         </div>
-        <div className="flex flex-[0.5] justify-start gap-2">
-          <input
-            type="checkbox"
-            checked={done}
-            disabled={updating}
-            onChange={onChangeHandler}
-            className="w-6 h-6"
-          />
-          {updating ? (
-            <p>Updating...</p>
-          ) : done ? (
-            <p className="text-green-600 font-semibold">Done</p>
+        <div className="flex flex-[0.3] justify-start gap-2">
+          {done ? (
+            <p className="text-green-600 font-semibold">Completed</p>
           ) : (
-            <p className="text-red-500 font-semibold">Waiting</p>
+            <p className="text-red-500 font-semibold">Preparing</p>
           )}
         </div>
-        <button
-          onClick={handleDeleteEntry}
-          disabled={deleting}
-          className="bg-red-500 p-0.5 rounded-full cursor-pointer"
-        >
-          <MdDeleteForever color="white" size={24} />
-        </button>
       </div>
       <Modal open={detailsShown} setOpen={setDetailsShown}>
         <div className="w-128 overflow-auto flex flex-col gap-4">

@@ -8,7 +8,7 @@ import Modal from "./Modal";
 
 interface Props extends MenuItemProps {}
 
-export default function MenuItem({ name, price, id }: Props) {
+export default function MenuItem({ name, price, outOfStock, id }: Props) {
   const [deleting, setDeleting] = useState(false);
   const queryClient = useQueryClient();
 
@@ -16,6 +16,7 @@ export default function MenuItem({ name, price, id }: Props) {
 
   const [nameState, setNameState] = useState(name);
   const [priceState, setPriceState] = useState(price);
+  const [outOfStockState, setOutOfStockState] = useState(outOfStock || false);
   const [saving, setSaving] = useState(false);
 
   const handleEdit = async (e: any) => {
@@ -25,10 +26,13 @@ export default function MenuItem({ name, price, id }: Props) {
       const data = {
         name: nameState,
         price: priceState,
+        outOfStock: outOfStockState,
       };
 
       await updateDoc(doc(db, "menu", id), data);
-      queryClient.setQueryData<MenuItemProps[]>(["menu"], (prevList) => prevList!.map((item) => (item.id === id ? { ...data, id: id } : item)));
+      queryClient.setQueryData<MenuItemProps[]>(["menu"], (prevList) =>
+        prevList!.map((item) => (item.id === id ? { ...data, id: id } : item))
+      );
 
       setOpen(false);
     } catch (e: any) {
@@ -41,9 +45,15 @@ export default function MenuItem({ name, price, id }: Props) {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      if (confirm(`Are you sure you want to delete "${name}"? Deleted menu items will appear as "[Deleted Item]" in receipts.`)) {
+      if (
+        confirm(
+          `Are you sure you want to delete "${name}"? Deleted menu items will appear as "[Deleted Item]" in receipts.`
+        )
+      ) {
         await deleteDoc(doc(db, "menu", id));
-        queryClient.setQueryData<MenuItemProps[]>(["menu"], (prevMenu) => prevMenu!.filter((item) => item.id !== id));
+        queryClient.setQueryData<MenuItemProps[]>(["menu"], (prevMenu) =>
+          prevMenu!.filter((item) => item.id !== id)
+        );
       }
     } catch (e: any) {
       alert(e.message);
@@ -55,21 +65,36 @@ export default function MenuItem({ name, price, id }: Props) {
   useEffect(() => {
     setNameState(name);
     setPriceState(price);
-  }, [name, price]);
+    setOutOfStockState(outOfStock || false);
+  }, [name, price, outOfStock]);
 
   return (
     <>
-      <div className={`w-64 bg-gray-100 shadow-md rounded-xl p-2 flex flex-col justify-between relative ${deleting ? "opacity-30" : ""}`}>
+      <div
+        className={`w-64 bg-gray-100 shadow-md rounded-xl p-2 flex flex-col justify-between relative ${
+          deleting ? "opacity-30" : ""
+        }`}
+      >
         <p className="text-xl font-semibold">{name}</p>
         <div className="w-full flex items-baseline justify-between">
-          <button onClick={() => setOpen(true)} className="text-amber-600 underline cursor-pointer">
+          <button
+            onClick={() => setOpen(true)}
+            className="text-amber-600 underline cursor-pointer"
+          >
             Edit
           </button>
-          <p className="self-end">{price.toLocaleString()} ₩</p>
+          {outOfStock ? (
+            <p className="self-end text-red-500 font-bold">Out of Stock</p>
+          ) : (
+            <p className="self-end">{price.toLocaleString()} ₩</p>
+          )}
         </div>
         <div
-          className={`absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 cursor-pointer ${deleting ? "invisible" : ""}`}
-          onClick={handleDelete}>
+          className={`absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 cursor-pointer ${
+            deleting ? "invisible" : ""
+          }`}
+          onClick={handleDelete}
+        >
           <MdClose size={12} color="white" />
         </div>
       </div>
@@ -98,10 +123,20 @@ export default function MenuItem({ name, price, id }: Props) {
               />
               <p className="text-xl">₩</p>
             </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="outOfStockCheckbox"
+                checked={outOfStockState}
+                onChange={(e) => setOutOfStockState(e.target.checked)}
+              />
+              <label htmlFor="outOfStockCheckbox">Out of Stock</label>
+            </div>
             <button
               type="submit"
               disabled={saving}
-              className="w-48 rounded-xl bg-amber-500 hover:bg-amber-400 active:bg-amber-300 disabled:bg-gray-400 p-2 text-white font-bold cursor-pointer self-center">
+              className="w-48 rounded-xl bg-amber-500 hover:bg-amber-400 active:bg-amber-300 disabled:bg-gray-400 p-2 text-white font-bold cursor-pointer self-center"
+            >
               {saving ? "Saving..." : "Save"}
             </button>
           </form>
