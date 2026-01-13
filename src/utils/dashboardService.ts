@@ -43,6 +43,7 @@ export type ListItemProps = {
   }[];
   done: boolean;
   online?: boolean;
+  doneIndices?: (number | undefined)[];
   id: string;
 };
 export type CustomerData = {

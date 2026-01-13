@@ -2,6 +2,8 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const admin = require("firebase-admin");
 const { getFirestore } = require("firebase-admin/firestore");
+const readline = require('node:readline/promises');
+const { stdin: input, stdout: output } = require('node:process');
 
 const serviceAccount = require("../serviceAccountKey.json");
 
@@ -18,10 +20,26 @@ const transporter = nodemailer.createTransport({
     },
   });
 
-  const users = []
-
 const createUsers = async () => {
     try {
+        const users = [];
+        const usersSnapshot = await db.collection("users").get();
+        for (const doc of usersSnapshot.docs) {
+            const data = doc.data();
+            const exists = await admin.auth().getUser(doc.id).then(() => true).catch(() => false);
+            if (!exists) {
+                users.push({
+                    id: doc.id,
+                    email: data.email,
+                    name: data.name,
+                });
+            }
+        }
+
+        const rl = readline.createInterface({ input, output });
+        await rl.question(`Found ${users.length} users without Firebase accounts (${users.map(u => u.email).join(", ")}). Proceed?`);
+        console.log("Confirmed, proceeding.");
+
         for (const user of users) {
             const password = crypto.randomBytes(6).toString("base64"); // ~8 chars, high entropy
             try {
@@ -40,8 +58,7 @@ const createUsers = async () => {
 
 Thank you for being a valued customer at the Badger Brews™ STUCO Cafe.
 
-We are excited to announce the launch of our new FastPaws™ online ordering system, designed to make using our cafe more convenient than ever.
-This email contains your login credentials to the website, where you will be able to place orders online, request deliveries, and view your transaction history.
+This email contains your login credentials to our FastPaws™ online ordering system, where you will be able to place orders online, request deliveries, and view your transaction history.
 Please keep this information secure and do not share it with others.
 
 Login Credentials — ${user.name}
@@ -53,7 +70,7 @@ Password: ${password}
 You can access our website through: https://spad-cafe.web.app
 
 If you have any questions or need assistance, please do not hesitate to reach out to: hyunjin.nam@stpaulacademy.org
-Again, thank you for choosing Badger Brews™! We look forward to serving you through our new and improved infrastructure.
+Again, thank you for choosing Badger Brews™! We look forward to serving you through our online infrastructure.
 
 Sincerely,
 Hyunjin Nam, STUCO President`;
@@ -71,7 +88,7 @@ Hyunjin Nam, STUCO President`;
             } else {
                 console.error(`Failed to send email to ${user.email}: ${res.rejected.join(", ")}`);
             }
-        }    
+       }    
     } catch(e) {
         console.error(e);
     } finally {

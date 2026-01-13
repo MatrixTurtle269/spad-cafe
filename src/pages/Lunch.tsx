@@ -3,7 +3,8 @@ import { LunchData, LunchRatingData } from "../utils/dashboardService";
 import dayjs from "dayjs";
 import { Rating } from "react-custom-rating-component";
 import Calendar from "react-calendar";
-import { MdAccountCircle, MdDelete, MdImage } from "react-icons/md";
+import { MdDelete, MdImage } from "react-icons/md";
+import LunchRatingItem from "../components/LunchRatingItem";
 import {
   getDownloadURL,
   ref as storageRef,
@@ -354,35 +355,13 @@ export default function Lunch() {
             <div className="flex flex-col flex-1 overflow-scroll gap-1">
               {ratings.length > 0 ? (
                 ratings.map(({ rating, comments, name, id }) => (
-                  <div
-                    className="w-full flex gap-2 bg-gray-100 rounded-xl p-2"
-                    key={id}
-                  >
-                    <MdAccountCircle color="gray" size={48} />
-                    <div className="w-full flex-col gap-2">
-                      <div className="w-full flex justify-between">
-                        <span className="text-xl font-semibold">Anonymous</span>
-                        <div className="flex">
-                          <Rating
-                            defaultValue={rating}
-                            size="30px"
-                            spacing="3px"
-                            precision={0.5}
-                            activeColor="orange"
-                            defaultColor="lightgray"
-                            readOnly
-                          />
-                          <button
-                            onClick={() => onDeleteResponse(id)}
-                            className="ml-2 bg-red-500 cursor-pointer rounded-full"
-                          >
-                            <MdDelete size={24} color="white" />
-                          </button>
-                        </div>
-                      </div>
-                      <span>{comments}</span>
-                    </div>
-                  </div>
+                  <LunchRatingItem
+                    rating={rating}
+                    comments={comments}
+                    name={name}
+                    id={id}
+                    onDeleteResponse={onDeleteResponse}
+                  />
                 ))
               ) : (
                 <div className="w-full flex flex-col justify-center items-center mt-48">

@@ -135,7 +135,7 @@ export default function LunchRatingFAB() {
         </div>
       </button>
       <Modal open={open} setOpen={setOpen}>
-        <div className="flex flex-col items-center gap-4 p-2">
+        <div className="max-w-[80vw] flex flex-col items-center gap-4 p-2">
           <MdFoodBank size={64} className="text-amber-500" />
           <h2 className="text-2xl font-bold">SPAD values your feedback!</h2>
           <p>Please take a moment to rate today's lunch.</p>
