@@ -11,6 +11,7 @@ import Checkout from "./pages/Checkout";
 import Menu from "./pages/Menu";
 import Customers from "./pages/Customers";
 import Header from "./components/Header";
+import Lunch from "./pages/Lunch";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ export default function App() {
               <Route path="checkout" element={<Checkout />} />
               <Route path="menu" element={<Menu />} />
               <Route path="customers" element={<Customers />} />
+              <Route path="lunch" element={<Lunch />} />
             </Route>
           </Routes>
         </div>

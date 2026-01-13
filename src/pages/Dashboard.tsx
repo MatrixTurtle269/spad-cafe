@@ -67,7 +67,7 @@ export default function Dashboard() {
         {loading ? (
           <p>Loading...</p>
         ) : list.length > 0 ? (
-          list.map((props, i) => <ListItem {...props} key={i} />)
+          list.map((props) => <ListItem {...props} key={props.id} />)
         ) : (
           <div className="w-full flex flex-col justify-center items-center mt-48">
             <MdList size={128} color={colors.gray["300"]} />

@@ -2,6 +2,7 @@ import { Navigate, Outlet } from "react-router-dom";
 import { User } from "firebase/auth";
 import { CgSpinner } from "react-icons/cg";
 import CustomerDashboard from "./CustomerDashboard";
+import LunchRatingFAB from "../components/LunchRatingFAB";
 
 export default function DashboardLayout({
   user,
@@ -20,6 +21,7 @@ export default function DashboardLayout({
   ) : (
     <div className="flex h-full">
       {admin ? <Outlet /> : <CustomerDashboard user={user} />}
+      <LunchRatingFAB />
     </div>
   );
 }

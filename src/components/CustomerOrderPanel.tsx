@@ -138,7 +138,7 @@ export default function CustomerOrderPanel({ addLocal, customerData }: Props) {
             </h1>
             <div className="flex flex-row p-2 border border-amber-500 bg-white rounded-xl gap-4">
               <p>
-                Funds: <b>{funds.toLocaleString()} ₩</b>
+                Credits: <b>{funds.toLocaleString()} ₩</b>
               </p>
               <label>
                 <input
@@ -148,7 +148,7 @@ export default function CustomerOrderPanel({ addLocal, customerData }: Props) {
                   className="w-4 h-4 mr-1"
                   disabled={funds <= 0}
                 />
-                Use Funds
+                Use Credits
               </label>
             </div>
           </div>

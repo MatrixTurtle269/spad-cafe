@@ -34,6 +34,7 @@ export default function NavBar() {
       <NavItem to="/dashboard/checkout">Checkout</NavItem>
       <NavItem to="/dashboard/menu">Edit Menu</NavItem>
       <NavItem to="/dashboard/customers">Customers</NavItem>
+      <NavItem to="/dashboard/lunch">Lunch</NavItem>
     </div>
   );
 }

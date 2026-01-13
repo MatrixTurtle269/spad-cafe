@@ -18,14 +18,10 @@ const transporter = nodemailer.createTransport({
     },
   });
 
+  const users = []
+
 const createUsers = async () => {
     try {
-        const users = []
-        const userSnapList = await db.collection("users").get();
-        userSnapList.docs.forEach((doc) => {
-            users.push({id: doc.id, ...doc.data()});
-        });
-
         for (const user of users) {
             const password = crypto.randomBytes(6).toString("base64"); // ~8 chars, high entropy
             try {

@@ -69,6 +69,20 @@ export type CheckoutJobCompiledListItemProps = {
   paid: boolean;
   id: string;
 };
+export type LunchData = {
+  details: string;
+  imageUrl: string;
+  updatedAt: Timestamp;
+};
+export type LunchRatingData = {
+  date: string; // YYYY-MM-DD
+  rating: number;
+  comments: string;
+  id: string;
+  name: string;
+  customerId: string;
+  timestamp: Timestamp;
+};
 
 export type LocalListDataUpdater = (
   id: string,

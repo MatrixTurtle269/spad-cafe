@@ -13,7 +13,7 @@ const app = admin.initializeApp({
 //     console.error('Error creating new user:', error);
 //   });
 
-admin.auth(app).setCustomUserClaims("y7ZoJ0vLdiZlPgrMKbk6", { admin: true }).then(() => {
+admin.auth(app).setCustomUserClaims("ZDGXTA3XTg5iaApmzipe", { admin: true }).then(() => {
   console.log("Custom claims set for user");
 }).catch((error) => {
   console.error("Error setting custom claims:", error);
