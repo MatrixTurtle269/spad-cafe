@@ -84,6 +84,13 @@ export type LunchRatingData = {
   customerId: string;
   timestamp: Timestamp;
 };
+export type VoucherData = {
+  code: string;
+  amount: number;
+  used: boolean;
+  usedBy?: string;
+  id: string;
+};
 
 export type LocalListDataUpdater = (
   id: string,

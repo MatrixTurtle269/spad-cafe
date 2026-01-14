@@ -1,24 +1,14 @@
 import { useEffect, useState } from "react";
 import Modal from "./Modal";
 import {
-  MdAccountCircle,
   MdCheckCircleOutline,
   MdDinnerDining,
   MdFoodBank,
   MdHideImage,
 } from "react-icons/md";
-import { LunchData, LunchRatingData } from "../utils/dashboardService";
+import { LunchData } from "../utils/dashboardService";
 import dayjs from "dayjs";
-import {
-  getDoc,
-  getDocs,
-  query,
-  collection,
-  where,
-  orderBy,
-  doc,
-  setDoc,
-} from "firebase/firestore";
+import { getDoc, doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { Rating } from "react-custom-rating-component";
 
@@ -26,7 +16,7 @@ export default function LunchRatingFAB() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [ratings, setRatings] = useState<LunchRatingData[]>([]);
+  // const [ratings, setRatings] = useState<LunchRatingData[]>([]);
   const [details, setDetails] = useState("");
   const [imageUrl, setImageUrl] = useState<string>("");
 
@@ -50,11 +40,14 @@ export default function LunchRatingFAB() {
       setLoading(true);
       try {
         if (!auth.currentUser) return;
+
+        // Check if already responded
         const ratingSnap = await getDoc(
           doc(db, "lunch_feedback", `${dateKey}_${auth.currentUser.uid}`)
         );
         setSubmitted(ratingSnap.exists());
 
+        // Fetch lunch details
         const docSnap = await getDoc(doc(db, "lunch", dateKey));
         if (docSnap.exists()) {
           const data = docSnap.data() as LunchData;
@@ -64,18 +57,18 @@ export default function LunchRatingFAB() {
           setDetails("");
           setImageUrl("");
         }
-        const ratingsSnap = await getDocs(
-          query(
-            collection(db, "lunch_feedback"),
-            where("date", "==", dateKey),
-            orderBy("timestamp", "desc")
-          )
-        );
-        setRatings(
-          ratingsSnap.docs.map(
-            (doc) => ({ ...doc.data(), id: doc.id } as LunchRatingData)
-          )
-        );
+        // const ratingsSnap = await getDocs(
+        //   query(
+        //     collection(db, "lunch_feedback"),
+        //     where("date", "==", dateKey),
+        //     orderBy("timestamp", "desc")
+        //   )
+        // );
+        // setRatings(
+        //   ratingsSnap.docs.map(
+        //     (doc) => ({ ...doc.data(), id: doc.id } as LunchRatingData)
+        //   )
+        // );
       } catch (e) {
         alert(`Error fetching lunch data: ${e}`);
       } finally {
@@ -173,7 +166,8 @@ export default function LunchRatingFAB() {
                       Thank you for your feedback!
                     </span>
                   </div>
-                  <span className="my-4">
+                  <span>Every opinion improves our lunch experience.</span>
+                  {/* <span className="my-4">
                     Take a look at what peers are saying.
                   </span>
                   <div className="w-full h-48 rounded-xl bg-gray-100 overflow-scroll p-2">
@@ -205,7 +199,7 @@ export default function LunchRatingFAB() {
                         <p className="text-2xl text-gray-300">No Responses</p>
                       </div>
                     )}
-                  </div>
+                  </div> */}
                 </div>
               ) : (
                 <div className="flex flex-col items-center">
@@ -228,9 +222,8 @@ export default function LunchRatingFAB() {
                     className="w-96 h-32 border border-amber-500 bg-white p-2 rounded-xl"
                   />
                   <span className="text-sm font-bold text-red-500 text-center mb-2">
-                    Please leave respectful and constructive feedback.
-                    <br />
-                    Inappropriate comments will be removed.
+                    Your response is anonymous. Please leave respectful and
+                    constructive feedback.
                   </span>
                   <button
                     className="flex justify-center gap-2 w-48 rounded-xl bg-amber-500 hover:bg-amber-400 active:bg-amber-300 disabled:bg-gray-400 p-2 text-white font-bold cursor-pointer"

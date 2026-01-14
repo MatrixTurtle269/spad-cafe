@@ -17,7 +17,6 @@ interface Props {
 export default function CheckoutJobItem({
   name,
   timestamp,
-  processed,
   index,
   selectedJobIndex,
   setSelectedJobIndex,
@@ -33,16 +32,7 @@ export default function CheckoutJobItem({
     >
       <div>
         <p className="text-lg font-semibold">{name}</p>
-        <div className="flex gap-1">
-          {processed ? (
-            <p className="text-sm font-bold text-blue-500">Processed</p>
-          ) : (
-            <p className="text-sm font-bold text-red-500">Pending</p>
-          )}
-          <p className="text-sm">
-            - Created {dayjs(timestamp.toDate()).fromNow()}
-          </p>
-        </div>
+        <p className="text-sm">Created {dayjs(timestamp.toDate()).fromNow()}</p>
       </div>
       <MdChevronRight size={24} />
     </div>
