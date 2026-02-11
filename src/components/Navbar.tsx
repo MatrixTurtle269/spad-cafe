@@ -29,13 +29,15 @@ export default function NavBar() {
   return (
     <div className="flex flex-1 items-center p-2 bg-white rounded-xl">
       <NavItem to="/dashboard" end>
-        Orders
+        Home
       </NavItem>
+      <div className="mx-2 w-1 h-8 bg-gray-500" />
+      <NavItem to="/dashboard/orders">Orders</NavItem>
       <NavItem to="/dashboard/checkout">Checkout</NavItem>
-      <NavItem to="/dashboard/menu">Edit Menu</NavItem>
+      <NavItem to="/dashboard/menu">Menu</NavItem>
       <NavItem to="/dashboard/customers">Customers</NavItem>
       <NavItem to="/dashboard/lunch">Lunch</NavItem>
-      <NavItem to="/dashboard/vouchers">Vouchers</NavItem>
+      {/* <NavItem to="/dashboard/vouchers">Vouchers</NavItem> */}
     </div>
   );
 }

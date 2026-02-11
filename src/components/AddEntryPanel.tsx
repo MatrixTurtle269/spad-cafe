@@ -6,8 +6,12 @@ import {
   Timestamp,
   updateDoc,
 } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { CustomerData, useMenu } from "../utils/dashboardService";
+import { useEffect, useMemo, useState } from "react";
+import {
+  CustomerData,
+  MenuItemProps,
+  useMenu,
+} from "../utils/dashboardService";
 import { nanSafe } from "../utils/nanSafe";
 import { db } from "../firebase";
 import SelectCustomerButton from "./SelectCustomerButton";
@@ -16,6 +20,35 @@ import { useQueryClient } from "@tanstack/react-query";
 export default function AddEntryPanel() {
   const queryClient = useQueryClient();
   const { data: menu, isFetching } = useMenu();
+
+  const itemById = useMemo(() => {
+    const map: Record<string, MenuItemProps> = {};
+    if (menu?.items) {
+      for (const it of menu.items) map[it.id] = it;
+    }
+    return map;
+  }, [menu]);
+
+  const orderedItems = useMemo(() => {
+    if (!menu?.categories) return [] as MenuItemProps[];
+
+    const out: MenuItemProps[] = [];
+    for (const cat of menu.categories) {
+      for (const id of cat.items) {
+        const it = itemById[id];
+        if (it) out.push(it);
+      }
+    }
+    return out;
+  }, [menu, itemById]);
+
+  const itemIndexById = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (let i = 0; i < orderedItems.length; i++) {
+      map[orderedItems[i].id] = i;
+    }
+    return map;
+  }, [orderedItems]);
 
   const [customer, setCustomer] = useState<CustomerData | null>(null);
   const [funds, setFunds] = useState(0);
@@ -52,11 +85,11 @@ export default function AddEntryPanel() {
         fundSubtraction: fundSubtraction,
         notes: notes,
         timestamp: Timestamp.fromDate(new Date()),
-        details: menu!
+        details: orderedItems
           .map(({ name, id }, i) => ({
             menuId: id,
             menuLabel: name,
-            quantity: quantityConfig[i],
+            quantity: quantityConfig[i] ?? 0,
           }))
           .filter(({ quantity }) => quantity > 0),
         done: false,
@@ -72,13 +105,13 @@ export default function AddEntryPanel() {
           prevList!.map((item) =>
             item.id === customer!.id
               ? { ...item, funds: funds - fundSubtraction }
-              : item
-          )
+              : item,
+          ),
         );
       }
 
       setCustomer(null);
-      setQuantityConfig(new Array(menu!.length).fill(0)); // Reset qty
+      setQuantityConfig(new Array(orderedItems.length).fill(0)); // Reset qty
       setManualPrice(0);
       setDiscount(0);
       setNotes("");
@@ -98,18 +131,18 @@ export default function AddEntryPanel() {
   };
 
   useEffect(() => {
-    setQuantityConfig(Array(menu ? menu.length : 0).fill(0));
-  }, [menu]);
+    setQuantityConfig(Array(orderedItems.length).fill(0));
+  }, [orderedItems.length]);
 
   useEffect(() => {
     setPayment(
-      menu
+      orderedItems.length
         ? quantityConfig
-            .map((q, i) => nanSafe(q) * menu[i].price)
+            .map((q, i) => nanSafe(q) * (orderedItems[i]?.price ?? 0))
             .reduce((a, b) => a + b, 0)
-        : 0
+        : 0,
     ); // Reduce sum
-  }, [quantityConfig]);
+  }, [quantityConfig, orderedItems]);
 
   useEffect(() => {
     if (customer) {
@@ -149,7 +182,7 @@ export default function AddEntryPanel() {
 
   return (
     <div className="w-full flex flex-1 flex-col p-4 bg-amber-100 border border-amber-500 rounded-xl overflow-hidden gap-2">
-      {isFetching || !menu ? (
+      {isFetching || !menu?.items || !menu?.categories ? (
         <div className="w-full h-full flex justify-center items-center">
           <p>Loading...</p>
         </div>
@@ -180,60 +213,90 @@ export default function AddEntryPanel() {
             className="flex flex-grow min-h-0 flex-col gap-2"
           >
             <div className="flex flex-grow min-h-0 overflow-scroll flex-col border border-amber-500 bg-white rounded-xl">
-              {menu.length > 0 ? (
-                menu.map(({ name, price, outOfStock }, i) => (
-                  <div
-                    className={`w-full flex flex-row items-center justify-between py-1 pr-2 pl-4 ${
-                      outOfStock
-                        ? "bg-red-100"
-                        : quantityConfig[i] > 0
-                        ? "bg-blue-100"
-                        : ""
-                    }`}
-                    key={i}
-                  >
-                    <p>{name}</p>
-                    <div className="flex flex-row items-center gap-1">
-                      <p>
-                        <b>{price.toLocaleString()} ₩</b> - Qty:
-                      </p>
-                      <input
-                        type="number"
-                        value={quantityConfig[i]}
-                        onChange={(e) =>
-                          changeItem(i, parseInt(e.target.value))
-                        }
-                        min="0"
-                        max="99"
-                        step="1"
-                        className="bg-gray-100 p-2 rounded-xl"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                          }
-                        }}
-                      />
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          changeItem(i, quantityConfig[i] + 1);
-                        }}
-                        className="w-8 h-8 cursor-pointer bg-green-100 hover:bg-green-200 rounded-lg shadow text-lg font-semibold"
-                      >
-                        +
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          changeItem(i, Math.max(0, quantityConfig[i] - 1));
-                        }}
-                        className="w-8 h-8 cursor-pointer bg-red-100 hover:bg-red-200 rounded-lg shadow text-lg font-semibold"
-                      >
-                        -
-                      </button>
+              {menu.categories.length > 0 && orderedItems.length > 0 ? (
+                <div className="flex flex-col">
+                  {menu.categories.map((cat) => (
+                    <div
+                      key={cat.id}
+                      className="border-b border-gray-200 last:border-b-0"
+                    >
+                      <div className="sticky top-0 z-10 bg-white px-4 py-2 border-b border-gray-200">
+                        <p className="font-bold text-gray-800">{cat.title}</p>
+                      </div>
+
+                      <div className="flex flex-col">
+                        {cat.items
+                          .map((id) => itemById[id])
+                          .filter(Boolean)
+                          .map((item) => {
+                            const i = itemIndexById[item.id];
+                            const qty = quantityConfig[i] ?? 0;
+
+                            return (
+                              <div
+                                className={`w-full flex flex-row items-center justify-between py-1 pr-2 pl-4 ${
+                                  item.outOfStock
+                                    ? "bg-red-100"
+                                    : qty > 0
+                                      ? "bg-blue-100"
+                                      : ""
+                                }`}
+                                key={item.id}
+                              >
+                                <p>{item.name}</p>
+                                <div className="flex flex-row items-center gap-1">
+                                  <p>
+                                    <b>{item.price.toLocaleString()} ₩</b> -
+                                    Qty:
+                                  </p>
+                                  <input
+                                    type="number"
+                                    value={qty}
+                                    onChange={(e) =>
+                                      changeItem(i, parseInt(e.target.value))
+                                    }
+                                    min="0"
+                                    max="99"
+                                    step="1"
+                                    className="bg-gray-100 p-2 rounded-xl"
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        e.preventDefault();
+                                      }
+                                    }}
+                                  />
+                                  <button
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      changeItem(i, qty + 1);
+                                    }}
+                                    className="w-8 h-8 cursor-pointer bg-green-100 hover:bg-green-200 rounded-lg shadow text-lg font-semibold"
+                                  >
+                                    +
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      changeItem(i, Math.max(0, qty - 1));
+                                    }}
+                                    className="w-8 h-8 cursor-pointer bg-red-100 hover:bg-red-200 rounded-lg shadow text-lg font-semibold"
+                                  >
+                                    -
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+
+                        {cat.items.length === 0 && (
+                          <div className="px-4 py-3 text-sm text-gray-500">
+                            No items in this category
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               ) : (
                 <div className="w-full h-full flex justify-center items-center">
                   <p>No Menu Items</p>

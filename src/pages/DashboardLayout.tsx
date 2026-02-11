@@ -1,8 +1,7 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { User } from "firebase/auth";
-import { CgSpinner } from "react-icons/cg";
-import CustomerDashboard from "./CustomerDashboard";
-import LunchRatingFAB from "../components/LunchRatingFAB";
+import Modal from "../components/Modal";
+import { MdConstruction } from "react-icons/md";
 
 export default function DashboardLayout({
   user,
@@ -11,17 +10,42 @@ export default function DashboardLayout({
   user: User | null | undefined;
   admin: boolean | null;
 }) {
-  return user === null ? (
-    <Navigate to="/" replace />
-  ) : user === undefined || admin === null ? (
-    <div className="w-screen h-screen flex flex-col justify-center items-center">
-      <h1 className="text-xl font-bold mb-4">Just a moment...</h1>
-      <CgSpinner size={64} className="animate-spin" />
-    </div>
-  ) : (
+  const location = useLocation();
+  const path = location.pathname;
+  const isAdminPath =
+    path.includes("/dashboard/orders") ||
+    path.includes("/dashboard/menu") ||
+    path.includes("/dashboard/customers") ||
+    path.includes("/dashboard/lunch") ||
+    path.includes("/dashboard/vouchers");
+
+  if (user === null) return <Navigate to="/" replace />;
+
+  if (isAdminPath && admin === false) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return (
     <div className="flex h-full">
-      {admin ? <Outlet /> : <CustomerDashboard user={user} />}
-      <LunchRatingFAB />
+      <Outlet />
+      <Modal open={true} setOpen={() => {}}>
+        <div className="w-128 p-4 bg-white rounded-lg flex flex-col items-center gap-4">
+          <MdConstruction size={48} />
+          <h1 className="text-2xl font-bold">Maintenance Notice</h1>
+          <p className="text-center">Dear Customers,</p>
+          <p className="text-center">
+            Due to internal maintenance and preparations for upcoming events,
+            the Badger Brews™ STUCO Cafe will be{" "}
+            <b>closed today (Thursday, February 12th).</b> We apologize for the
+            inconvenience.
+          </p>
+          <p className="text-center">
+            Sincerely,
+            <br />
+            Hyunjin Nam, STUCO President
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 }

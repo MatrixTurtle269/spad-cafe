@@ -6,19 +6,20 @@ import {
   MdFoodBank,
   MdHideImage,
 } from "react-icons/md";
-import { LunchData } from "../utils/dashboardService";
 import dayjs from "dayjs";
 import { getDoc, doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { Rating } from "react-custom-rating-component";
 
-export default function LunchRatingFAB() {
+interface Props {
+  details: string;
+  imageUrl: string;
+}
+
+export default function LunchRatingButton({ details, imageUrl }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  // const [ratings, setRatings] = useState<LunchRatingData[]>([]);
-  const [details, setDetails] = useState("");
-  const [imageUrl, setImageUrl] = useState<string>("");
 
   const [rating, setRating] = useState<number>(2.5);
   const [comments, setComments] = useState<string>("");
@@ -43,32 +44,9 @@ export default function LunchRatingFAB() {
 
         // Check if already responded
         const ratingSnap = await getDoc(
-          doc(db, "lunch_feedback", `${dateKey}_${auth.currentUser.uid}`)
+          doc(db, "lunch_feedback", `${dateKey}_${auth.currentUser.uid}`),
         );
         setSubmitted(ratingSnap.exists());
-
-        // Fetch lunch details
-        const docSnap = await getDoc(doc(db, "lunch", dateKey));
-        if (docSnap.exists()) {
-          const data = docSnap.data() as LunchData;
-          setDetails(data.details);
-          setImageUrl(data.imageUrl);
-        } else {
-          setDetails("");
-          setImageUrl("");
-        }
-        // const ratingsSnap = await getDocs(
-        //   query(
-        //     collection(db, "lunch_feedback"),
-        //     where("date", "==", dateKey),
-        //     orderBy("timestamp", "desc")
-        //   )
-        // );
-        // setRatings(
-        //   ratingsSnap.docs.map(
-        //     (doc) => ({ ...doc.data(), id: doc.id } as LunchRatingData)
-        //   )
-        // );
       } catch (e) {
         alert(`Error fetching lunch data: ${e}`);
       } finally {
@@ -118,7 +96,7 @@ export default function LunchRatingFAB() {
   return (
     <>
       <button
-        className="flex items-center gap-1 px-4 py-2 fixed bottom-4 left-4 bg-amber-500 hover:bg-amber-400 text-white text-2xl font-semibold rounded-full cursor-pointer shadow"
+        className="flex items-center gap-1 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-xl font-semibold rounded-full cursor-pointer"
         onClick={() => setOpen(true)}
       >
         <MdDinnerDining size={24} />

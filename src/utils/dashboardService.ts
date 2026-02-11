@@ -8,6 +8,8 @@ import {
   Timestamp,
   where,
   onSnapshot,
+  getDoc,
+  doc,
 } from "firebase/firestore";
 import { getDaySpan } from "./getDaySpan";
 
@@ -15,15 +17,14 @@ export type MenuItemProps = {
   name: string;
   price: number;
   outOfStock?: boolean;
-  index?: number;
-  category?: string;
   id: string;
 };
 export type MenuCategoryProps = {
-  name: string;
-  index: number;
+  title: string;
+  items: string[]; // menuItemIds
   id: string;
 };
+
 export type ListItemProps = {
   timestamp: Timestamp;
   name: string;
@@ -94,17 +95,17 @@ export type VoucherData = {
 
 export type LocalListDataUpdater = (
   id: string,
-  updatedProps: Partial<ListItemProps>
+  updatedProps: Partial<ListItemProps>,
 ) => void;
 export type LocalListDataAdder = (props: ListItemProps) => void;
 export type LocalListDataDeleter = (id: string) => void;
 
 export type LocalCompiledListDataAdder = (
-  props: CheckoutJobCompiledListItemProps
+  props: CheckoutJobCompiledListItemProps,
 ) => void;
 export type LocalCompiledListDataUpdater = (
   id: string,
-  updatedProps: Partial<CheckoutJobCompiledListItemProps>
+  updatedProps: Partial<CheckoutJobCompiledListItemProps>,
 ) => void;
 export type LocalCompiledListDataDeleter = (id: string) => void;
 
@@ -115,17 +116,17 @@ export const fetchList = async (date: Date) => {
       collection(db, "log"),
       where("timestamp", ">=", start),
       where("timestamp", "<=", end),
-      orderBy("timestamp", "desc")
-    )
+      orderBy("timestamp", "desc"),
+    ),
   );
   return snap.docs.map(
-    (doc) => ({ ...doc.data(), id: doc.id } as ListItemProps)
+    (doc) => ({ ...doc.data(), id: doc.id }) as ListItemProps,
   );
 };
 
 export const subscribeToList = (
   date: Date,
-  callback: (items: ListItemProps[]) => void
+  callback: (items: ListItemProps[]) => void,
 ) => {
   const { start, end } = getDaySpan(date);
 
@@ -133,12 +134,12 @@ export const subscribeToList = (
     collection(db, "log"),
     where("timestamp", ">=", start),
     where("timestamp", "<=", end),
-    orderBy("timestamp", "desc")
+    orderBy("timestamp", "desc"),
   );
 
   const unsubscribe = onSnapshot(q, (snapshot) => {
     const items = snapshot.docs.map(
-      (doc) => ({ ...doc.data(), id: doc.id } as ListItemProps)
+      (doc) => ({ ...doc.data(), id: doc.id }) as ListItemProps,
     );
     callback(items);
   });
@@ -150,27 +151,13 @@ export const useMenu = () => {
   return useQuery({
     queryKey: ["menu"],
     queryFn: async () => {
-      const snap = await getDocs(collection(db, "menu"));
-      return snap.docs.map(
-        (doc) => ({ ...doc.data(), id: doc.id } as MenuItemProps)
-      );
+      const snap = await getDoc(doc(db, "menu", "menuItems"));
+      return snap.data() as {
+        items: MenuItemProps[];
+        categories: MenuCategoryProps[];
+        updatedAt: Timestamp;
+      };
     },
-    staleTime: 1000 * 60 * 10, // Stale after 10 mins
-  });
-};
-
-export const useMenuCategories = () => {
-  return useQuery({
-    queryKey: ["menuCategories"],
-    queryFn: async () => {
-      const snap = await getDocs(
-        query(collection(db, "menuCategories"), orderBy("index", "asc"))
-      );
-      return snap.docs.map(
-        (doc) => ({ ...doc.data(), id: doc.id } as MenuCategoryProps)
-      );
-    },
-    staleTime: 1000 * 60 * 10, // Stale after 10 mins
   });
 };
 
@@ -179,10 +166,10 @@ export const useCustomerList = () => {
     queryKey: ["customers"],
     queryFn: async () => {
       const snap = await getDocs(
-        query(collection(db, "users"), orderBy("name", "desc"))
+        query(collection(db, "users"), orderBy("name", "desc")),
       );
       return snap.docs.map(
-        (doc) => ({ ...doc.data(), id: doc.id } as CustomerData)
+        (doc) => ({ ...doc.data(), id: doc.id }) as CustomerData,
       );
     },
     staleTime: 1000 * 60 * 10, // Stale after 10 mins
@@ -194,10 +181,10 @@ export const useCheckoutJobList = () => {
     queryKey: ["checkoutJobs"],
     queryFn: async () => {
       const snap = await getDocs(
-        query(collection(db, "checkout"), orderBy("timestamp", "desc"))
+        query(collection(db, "checkout"), orderBy("timestamp", "desc")),
       );
       return snap.docs.map(
-        (doc) => ({ ...doc.data(), id: doc.id } as CheckoutJobData)
+        (doc) => ({ ...doc.data(), id: doc.id }) as CheckoutJobData,
       );
     },
     staleTime: 1000 * 60 * 10, // Stale after 10 mins

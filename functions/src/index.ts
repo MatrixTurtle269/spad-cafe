@@ -3,6 +3,8 @@ import { Timestamp } from "firebase-admin/firestore";
 import * as nodemailer from "nodemailer";
 import * as admin from "firebase-admin";
 import dayjs from "dayjs";
+import bwipjs from "bwip-js";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
 import type {
   MenuItemProps,
@@ -14,6 +16,16 @@ import type {
 if (!admin.apps.length) {
   admin.initializeApp();
 }
+
+export const print = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Insufficient permissions.");
+  }
+
+  const { voucherData } = request.data as {
+    voucherData: { code: string; value: number }[];
+  };
+});
 
 export const compile = onCall(async (request) => {
   if (!request.auth) {
