@@ -114,7 +114,7 @@ export default function CustomerDashboard() {
     <div className="flex w-screen h-screen gap-4 pt-16">
       <div className="flex flex-1 flex-row gap-4 p-4">
         {loading || !customerData ? (
-          <div className="flex flex-1 justify-center items-center">
+          <div className="flex flex-col flex-1 justify-center items-center">
             <h1 className="text-xl font-bold mb-4">Just a moment...</h1>
             <CgSpinner size={64} className="animate-spin" />
           </div>

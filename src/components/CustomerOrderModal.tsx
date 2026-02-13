@@ -203,7 +203,7 @@ export default function CustomerOrderModal({
                         key={cat.id}
                         className="border-b border-gray-200 last:border-b-0"
                       >
-                        <div className="sticky top-0 z-10 bg-white px-4 py-2 border-b border-gray-200">
+                        <div className="sticky top-0 z-10 bg-gray-100 px-4 py-2 shadow">
                           <p className="font-bold text-gray-800">{cat.title}</p>
                         </div>
 
@@ -217,7 +217,7 @@ export default function CustomerOrderModal({
 
                               return (
                                 <div
-                                  className={`w-full flex flex-row items-center justify-between py-1 pr-2 pl-4 ${
+                                  className={`w-full h-12 flex flex-row items-center justify-between pr-2 pl-4 ${
                                     qty > 0 ? "bg-blue-100" : ""
                                   }`}
                                   key={item.id}

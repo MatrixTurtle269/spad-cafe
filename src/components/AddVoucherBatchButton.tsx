@@ -6,7 +6,7 @@ import Modal from "./Modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { MdAdd } from "react-icons/md";
 
-const values = [3000, 5000, 10000];
+// const values = [3000, 5000, 10000];
 
 export default function AddVoucherBatchButton() {
   const [open, setOpen] = useState(false);

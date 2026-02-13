@@ -7,12 +7,12 @@ export default function MenuItem({ name, price, outOfStock }: Props) {
     <>
       <div className="w-64 bg-gray-100 shadow-md rounded-xl p-2 gap-2 flex flex-col justify-between">
         <div className="w-full h-32 bg-gray-200 rounded-lg"></div>
-        <div className="w-full flex items-baseline justify-between">
-          <p className="text-xl font-semibold">{name}</p>
+        <div className="flex flex-col gap-0">
+          <p className="text-xl font-semibold line-clamp-1">{name}</p>
           {outOfStock ? (
-            <p className="self-end text-red-500 font-bold">Out of Stock</p>
+            <p className="text-red-500 font-bold">Out of Stock</p>
           ) : (
-            <p className="self-end">{price.toLocaleString()} ₩</p>
+            <p className="line-clamp-1">{price.toLocaleString()} ₩</p>
           )}
         </div>
       </div>

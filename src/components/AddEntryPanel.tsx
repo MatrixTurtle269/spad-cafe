@@ -181,33 +181,13 @@ export default function AddEntryPanel() {
   ]);
 
   return (
-    <div className="w-full flex flex-1 flex-col p-4 bg-amber-100 border border-amber-500 rounded-xl overflow-hidden gap-2">
+    <div className="w-full flex flex-1 flex-col-reverse p-4 bg-amber-100 border border-amber-500 rounded-xl overflow-hidden gap-2">
       {isFetching || !menu?.items || !menu?.categories ? (
         <div className="w-full h-full flex justify-center items-center">
           <p>Loading...</p>
         </div>
       ) : (
         <>
-          <SelectCustomerButton customer={customer} setCustomer={setCustomer} />
-          <div
-            className={`w-full flex items-center justify-between ${
-              customer === null ? "hidden" : ""
-            }`}
-          >
-            <p className="">
-              Funds: <b>{funds.toLocaleString()} ₩</b>
-            </p>
-            <label>
-              <input
-                type="checkbox"
-                checked={subtractFromFunds}
-                onChange={(e) => setSubtractFromFunds(e.target.checked)}
-                className="w-4 h-4 mr-1"
-                disabled={funds <= 0}
-              />
-              Use Funds
-            </label>
-          </div>
           <form
             onSubmit={handleAddEntry}
             className="flex flex-grow min-h-0 flex-col gap-2"
@@ -220,7 +200,7 @@ export default function AddEntryPanel() {
                       key={cat.id}
                       className="border-b border-gray-200 last:border-b-0"
                     >
-                      <div className="sticky top-0 z-10 bg-white px-4 py-2 border-b border-gray-200">
+                      <div className="sticky top-0 z-10 bg-gray-100 px-4 py-2 shadow-lg">
                         <p className="font-bold text-gray-800">{cat.title}</p>
                       </div>
 
@@ -401,6 +381,26 @@ export default function AddEntryPanel() {
               </p>
             )}
           </form>
+          <div
+            className={`w-full flex items-center justify-between ${
+              customer === null ? "hidden" : ""
+            }`}
+          >
+            <p className="">
+              Funds: <b>{funds.toLocaleString()} ₩</b>
+            </p>
+            <label>
+              <input
+                type="checkbox"
+                checked={subtractFromFunds}
+                onChange={(e) => setSubtractFromFunds(e.target.checked)}
+                className="w-4 h-4 mr-1"
+                disabled={funds <= 0}
+              />
+              Use Funds
+            </label>
+          </div>
+          <SelectCustomerButton customer={customer} setCustomer={setCustomer} />
         </>
       )}
     </div>
