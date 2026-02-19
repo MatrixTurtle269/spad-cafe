@@ -120,7 +120,7 @@ export default function CustomerDashboard() {
           </div>
         ) : (
           <>
-            <div className="flex flex-col flex-3 overflow-scroll">
+            <div className="flex flex-col flex-3 overflow-y-scroll">
               <div className="flex w-full items-center gap-2">
                 <div className="flex flex-1 flex-col">
                   <h1 className="text-3xl">
@@ -162,10 +162,10 @@ export default function CustomerDashboard() {
                 </div>
               )}
             </div>
-            <div className="flex flex-col flex-2 gap-4">
-              <div className="flex flex-col flex-1">
+            <div className="flex flex-col flex-2 gap-4 overflow-y-scroll">
+              <div className="flex flex-col">
                 <h2 className="text-xl font-semibold mb-2">STUCO Events</h2>
-                <div className="flex w-full h-full bg-gray-100 rounded-xl items-center justify-center">
+                <div className="flex w-full min-h-48 bg-gray-100 rounded-xl items-center justify-center">
                   <p className="text-gray-500">No events at the moment.</p>
                 </div>
               </div>
