@@ -176,28 +176,28 @@ export default function CustomerDashboard() {
                     <p className="text-lg font-semibold">
                       {dayjs(new Date()).format("MMMM D, YYYY (dddd)")}
                     </p>
-                    <p className="text-center whitespace-pre-wrap">
+                    <p className="text-center whitespace-pre-wrap mb-4">
                       {lunchDetails || "No details available"}
                     </p>
+                    <LunchRatingButton
+                      details={lunchDetails || ""}
+                      imageUrl={lunchImageUrl || ""}
+                    />
                   </div>
                   {lunchImageUrl ? (
-                    <img
-                      src={lunchImageUrl}
-                      alt="Lunch"
-                      className="flex flex-2 object-cover rounded-xl"
-                    />
+                    <div className="flex flex-2">
+                      <img
+                        src={lunchImageUrl}
+                        alt="Lunch"
+                        className="w-full h-full object-cover rounded-xl"
+                      />
+                    </div>
                   ) : (
                     <div className="flex flex-2 rounded-xl bg-gray-200 flex-col justify-center items-center">
                       <MdHideImage size={48} color="gray" />
                       <span>No Image</span>
                     </div>
                   )}
-                </div>
-                <div className="flex flex-col w-full mt-2 items-center">
-                  <LunchRatingButton
-                    details={lunchDetails || ""}
-                    imageUrl={lunchImageUrl || ""}
-                  />
                 </div>
               </div>
             </div>

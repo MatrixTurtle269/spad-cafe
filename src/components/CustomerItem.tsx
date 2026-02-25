@@ -46,7 +46,7 @@ export default function CustomerItem({ name, email, funds, id }: Props) {
 
       await updateDoc(doc(db, "users", id), data);
       queryClient.setQueryData<CustomerData[]>(["customers"], (prevList) =>
-        prevList!.map((item) => (item.id === id ? { ...data, id: id } : item))
+        prevList!.map((item) => (item.id === id ? { ...data, id: id } : item)),
       );
 
       setEditModalOpen(false);
@@ -64,7 +64,7 @@ export default function CustomerItem({ name, email, funds, id }: Props) {
       if (confirm(`Are you sure you want to delete "${name}"?`)) {
         await deleteDoc(doc(db, "users", id));
         queryClient.setQueryData<CustomerData[]>(["customers"], (prevList) =>
-          prevList!.filter((item) => item.id !== id)
+          prevList!.filter((item) => item.id !== id),
         );
       }
     } catch (e: any) {
@@ -84,13 +84,13 @@ export default function CustomerItem({ name, email, funds, id }: Props) {
           query(
             collection(db, "log"),
             where("customerId", "==", id),
-            orderBy("timestamp", "desc")
-          )
+            orderBy("timestamp", "desc"),
+          ),
         );
         setSearchedList(
           snap.docs.map(
-            (doc) => ({ ...doc.data(), id: doc.id } as ListItemProps)
-          )
+            (doc) => ({ ...doc.data(), id: doc.id }) as ListItemProps,
+          ),
         );
       }
     } catch (e: any) {
@@ -164,7 +164,7 @@ export default function CustomerItem({ name, email, funds, id }: Props) {
               required
             />
             <div className="w-full flex items-center gap-2">
-              <p>Funds: </p>
+              <p>Credits: </p>
               <input
                 type="number"
                 className="w-full border border-amber-500 bg-white p-2 rounded-xl"
@@ -209,7 +209,7 @@ export default function CustomerItem({ name, email, funds, id }: Props) {
                       {details
                         .map(
                           ({ menuLabel, quantity }) =>
-                            `${menuLabel} x${quantity}`
+                            `${menuLabel} x${quantity}`,
                         )
                         .join(", ")}
                     </p>

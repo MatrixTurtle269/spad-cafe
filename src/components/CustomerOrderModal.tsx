@@ -16,6 +16,7 @@ import {
 import { nanSafe } from "../utils/nanSafe";
 import { db } from "../firebase";
 import Modal from "./Modal";
+import MenuItemOrder from "./MenuItemOrder";
 
 interface Props {
   addLocal: LocalListDataAdder;
@@ -207,7 +208,7 @@ export default function CustomerOrderModal({
                           <p className="font-bold text-gray-800">{cat.title}</p>
                         </div>
 
-                        <div className="flex flex-col">
+                        <div className="w-full grid grid-cols-3 gap-2 p-2">
                           {cat.items
                             .map((id) => itemById[id])
                             .filter(Boolean)
@@ -216,61 +217,13 @@ export default function CustomerOrderModal({
                               const qty = quantityConfig[i] ?? 0;
 
                               return (
-                                <div
-                                  className={`w-full h-12 flex flex-row items-center justify-between pr-2 pl-4 ${
-                                    qty > 0 ? "bg-blue-100" : ""
-                                  }`}
+                                <MenuItemOrder
                                   key={item.id}
-                                >
-                                  <p>{item.name}</p>
-                                  {item.outOfStock ? (
-                                    <b className="text-red-500">Out of Stock</b>
-                                  ) : (
-                                    <div className="flex flex-row items-center gap-1">
-                                      <p>
-                                        <b>{item.price.toLocaleString()} ₩</b> -
-                                        Qty:
-                                      </p>
-                                      <input
-                                        type="number"
-                                        value={qty}
-                                        onChange={(e) =>
-                                          changeItem(
-                                            i,
-                                            parseInt(e.target.value),
-                                          )
-                                        }
-                                        min="0"
-                                        max="99"
-                                        step="1"
-                                        className="bg-gray-100 p-2 rounded-xl"
-                                        onKeyDown={(e) => {
-                                          if (e.key === "Enter") {
-                                            e.preventDefault();
-                                          }
-                                        }}
-                                      />
-                                      <button
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          changeItem(i, qty + 1);
-                                        }}
-                                        className="w-8 h-8 cursor-pointer bg-green-100 hover:bg-green-200 rounded-lg shadow text-lg font-semibold"
-                                      >
-                                        +
-                                      </button>
-                                      <button
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          changeItem(i, Math.max(0, qty - 1));
-                                        }}
-                                        className="w-8 h-8 cursor-pointer bg-red-100 hover:bg-red-200 rounded-lg shadow text-lg font-semibold"
-                                      >
-                                        -
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
+                                  {...item}
+                                  i={i}
+                                  qty={qty}
+                                  changeItem={changeItem}
+                                />
                               );
                             })}
 
@@ -325,7 +278,7 @@ export default function CustomerOrderModal({
                           Subtotal: <b>{payment.toLocaleString()} ₩</b>
                         </p>
                         <p className="text-red-500">
-                          Fund Subtraction: -
+                          Credit Subtraction: -
                           <b>{fundSubtraction.toLocaleString()} ₩</b>
                         </p>
                       </>
@@ -350,12 +303,12 @@ export default function CustomerOrderModal({
               >
                 {submitting
                   ? "Submitting..."
-                  : `Submit ${finalPayment.toLocaleString()} ₩`}
+                  : `Order ${finalPayment.toLocaleString()} ₩`}
               </button>
               {notes === "" && (
                 <p className="font-semibold text-red-500">
                   You have not specified a delivery location. Please collect
-                  your order in person on the 2nd floor.
+                  your order in person on the 1st floor.
                 </p>
               )}
               {finalPayment < 0 && (

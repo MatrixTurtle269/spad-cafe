@@ -6,16 +6,12 @@ import {
 } from "../utils/dashboardService";
 import MenuItem from "../components/MenuItem";
 import RefreshButton from "../components/RefreshButton";
-
-import { nanSafe } from "../utils/nanSafe";
 import { v4 as uuidv4 } from "uuid";
 import {
   MdAdd,
   MdArrowDownward,
   MdArrowUpward,
   MdCheck,
-  MdChevronLeft,
-  MdChevronRight,
   MdClose,
   MdEdit,
 } from "react-icons/md";
@@ -24,6 +20,7 @@ import { doc, Timestamp, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useQueryClient } from "@tanstack/react-query";
 import { arrayMove } from "@dnd-kit/sortable";
+import MenuItemEditing from "../components/MenuItemEditing";
 
 export default function Menu() {
   const queryClient = useQueryClient();
@@ -33,6 +30,7 @@ export default function Menu() {
 
   const [editing, setEditing] = useState<boolean>(false);
   const [savingChanges, setSavingChanges] = useState<boolean>(false);
+  const [disableSave, setDisableSave] = useState<boolean>(false);
   const [editedMenuItems, setEditedMenuItems] = useState<MenuItemProps[]>([]);
   const [editedCategories, setEditedCategories] = useState<MenuCategoryProps[]>(
     [],
@@ -211,7 +209,8 @@ export default function Menu() {
                 <MdAdd size={20} color="#d97706" />
               </button>
               <button
-                className="flex items-center gap-1 px-3 py-1 bg-amber-500 hover:bg-amber-400 text-white font-semibold rounded-full cursor-pointer"
+                className="flex items-center gap-1 px-3 py-1 bg-amber-500 hover:bg-amber-400 disabled:bg-gray-400 text-white font-semibold rounded-full cursor-pointer"
+                disabled={disableSave}
                 onClick={handleSaveChanges}
               >
                 Save Changes
@@ -306,91 +305,15 @@ export default function Menu() {
                       .map((id) => itemById[id])
                       .filter(Boolean)
                       .map((item) => (
-                        <div
-                          className="w-64 bg-gray-100 shadow-md rounded-xl p-2 flex flex-col gap-1 relative"
+                        <MenuItemEditing
                           key={item.id}
-                        >
-                          <input
-                            type="text"
-                            value={item.name}
-                            onChange={(e) => {
-                              const newName = e.target.value;
-                              editItem(item.id, { name: newName });
-                            }}
-                            className="text-lg font-bold border border-amber-500 p-1 rounded-lg"
-                          />
-                          <div className="w-full flex items-center gap-2">
-                            <input
-                              type="number"
-                              placeholder="Price"
-                              className="w-full border border-amber-500 bg-white p-2 rounded-xl"
-                              value={item.price}
-                              onChange={(e) => {
-                                const newPrice = parseInt(e.target.value);
-                                editItem(item.id, { price: nanSafe(newPrice) });
-                              }}
-                              min="0"
-                              max="99999"
-                              required
-                            />
-                            <p className="text-xl">₩</p>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                id={`outOfStockCheckbox-${category.id}-${item.id}`}
-                                checked={item.outOfStock}
-                                onChange={(e) => {
-                                  const newOutOfStock = e.target.checked;
-                                  editItem(item.id, {
-                                    outOfStock: newOutOfStock,
-                                  });
-                                }}
-                              />
-                              <label
-                                htmlFor={`outOfStockCheckbox-${category.id}-${item.id}`}
-                              >
-                                Out of Stock
-                              </label>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <button
-                                className="cursor-pointer"
-                                onClick={() =>
-                                  moveItem(category.id, item.id, "up")
-                                }
-                              >
-                                <MdChevronLeft size={20} color="black" />
-                              </button>
-                              <button
-                                className="cursor-pointer"
-                                onClick={() =>
-                                  moveItem(category.id, item.id, "down")
-                                }
-                              >
-                                <MdChevronRight size={20} color="black" />
-                              </button>
-                            </div>
-                          </div>
-                          <div
-                            className={
-                              "absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 cursor-pointer"
-                            }
-                            onClick={() => {
-                              if (
-                                !confirm(
-                                  "Are you sure you want to delete this item?",
-                                )
-                              ) {
-                                return;
-                              }
-                              removeItem(item.id);
-                            }}
-                          >
-                            <MdClose size={12} color="white" />
-                          </div>
-                        </div>
+                          {...item}
+                          categoryId={category.id}
+                          editItem={editItem}
+                          moveItem={moveItem}
+                          removeItem={removeItem}
+                          setDisableSave={setDisableSave}
+                        />
                       ));
                   })()}
                 </div>

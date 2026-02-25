@@ -18,6 +18,9 @@ export type MenuItemProps = {
   price: number;
   outOfStock?: boolean;
   id: string;
+  imageUrl?: string;
+  newTag?: boolean;
+  bestTag?: boolean;
 };
 export type MenuCategoryProps = {
   title: string;
